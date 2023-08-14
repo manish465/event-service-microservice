@@ -1,0 +1,52 @@
+# Event service using microservice
+## Users :
+- Normal User
+- Admin User
+## Normal User:
+- User can register themselves using:
+    - First name
+    - Last name
+    - Email
+    - Password
+    - Address
+      - House/Flat number/name
+      - Street name
+      - Landmark
+      - City
+      - Zipcode
+      - State
+      - Country
+      - Extra info
+    - Phone:
+      - Country code
+      - Number
+      - Type
+- User can login to the site and view their profile where they can see:
+  - Full name
+  - Email (If it is verified or not)
+  - Full address
+  - phone numbers
+- The user can go to update profile page and update their details and verify their email (If they did not)
+- While verification user will get an verification email to their registed email id in which they will have to click on verify link to verify it
+- The user will get the verification email once they register and whenever they click on verify button in update profile page
+- The user can visit events page to see all the event and browser through it
+- The verified user can join event if the if the seats are available
+- The verified can also create an event in create event page using:
+  - Event name
+  - Event description
+  - Event start date
+  - Event end date
+  - Event start time
+  - Event end time
+  - Max capacity
+- The user can also visit their created events page where they can:
+  - see all of their created events and who has joined them
+  - update all of their created events
+  - delete all of their created events
+- The user can also visit joined events page where the can:
+  - see all joined events
+  - cancel joined events
+## Admin user
+- the registration and login process is similar to normal user but the during verification process we will get the verification email and either approve and decline the email verification
+- if not verified they can only see the list of user
+- if verified they can also delete users
