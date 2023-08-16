@@ -4,6 +4,8 @@ import com.manish.user.dto.UserRegisterRequestDTO;
 import com.manish.user.entity.Address;
 import com.manish.user.entity.Phonenumber;
 import com.manish.user.entity.User;
+import com.manish.user.exception.ApplicationException;
+import com.manish.user.exception.UserAlreadyExist;
 import com.manish.user.repository.AddressRepository;
 import com.manish.user.repository.PhoneRepository;
 import com.manish.user.repository.UserRepository;
@@ -14,6 +16,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.validation.annotation.Validated;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,6 +24,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Service
+@Validated
 @Slf4j
 @RequiredArgsConstructor
 public class UserService {
@@ -35,7 +39,7 @@ public class UserService {
         Optional<User> userExist = userRepository.findByEmail(requestDTO.getEmail());
 
         if(userExist.isPresent()){
-            throw new RuntimeException("User already exist");
+            throw new UserAlreadyExist("User already exist");
         }
 
         try{
@@ -79,7 +83,7 @@ public class UserService {
 
             return new ResponseEntity<>("User Registered Successfully", HttpStatus.CREATED);
         }catch (Exception e){
-            throw new RuntimeException(e.getMessage());
+            throw new ApplicationException(e.getMessage());
         }
     }
 }

@@ -16,7 +16,7 @@ import lombok.NoArgsConstructor;
 public class Phonenumber {
     @Id
     private String phoneId;
-    private Integer countryCode;
-    private Long number;
+    private String countryCode;
+    private String number;
     private String type;
 }

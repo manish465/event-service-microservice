@@ -20,7 +20,7 @@ public class Address {
     private String street;
     private String landmark;
     private String city;
-    private Integer zipcode;
+    private String zipcode;
     private String state;
     private String country;
     private String extraInfo;
