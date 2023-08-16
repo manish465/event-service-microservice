@@ -11,3 +11,8 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
+
+management:
+  tracing:
+    sampling:
+      probability: 1.0
