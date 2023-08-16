@@ -8,6 +8,7 @@
     - Last name
     - Email
     - Password
+    - role
     - Address
       - House/Flat number/name
       - Street name
