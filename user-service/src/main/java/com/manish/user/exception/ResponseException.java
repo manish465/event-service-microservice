@@ -32,7 +32,7 @@ public class ResponseException {
     }
 
     @ExceptionHandler(ApplicationException.class)
-    public ResponseEntity<ErrorResponseDTO> handleApplicationException(UserAlreadyExist e){
+    public ResponseEntity<ErrorResponseDTO> handleApplicationException(ApplicationException e){
         log.info("|| thrown an ApplicationException with error message : {} ||", e.getMessage());
 
         return new ResponseEntity<>(new ErrorResponseDTO(e.getMessage()), HttpStatus.BAD_REQUEST);
