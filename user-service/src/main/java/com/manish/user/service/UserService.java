@@ -1,6 +1,7 @@
 package com.manish.user.service;
 
 import com.manish.user.dto.TokenResponseDTO;
+import com.manish.user.dto.UserDetailsResponseDTO;
 import com.manish.user.dto.UserLoginRequestDTO;
 import com.manish.user.dto.UserRegisterRequestDTO;
 import com.manish.user.entity.Address;
@@ -111,6 +112,31 @@ public class UserService {
                 .generateToken(authentication.getName(),
                         Convertor.extractAuthoritiesToString(authentication.getAuthorities()));
 
-        return new ResponseEntity<>(new TokenResponseDTO(token), HttpStatus.OK);
+        Optional<User> userOptional = userRepository.findByEmail(authentication.getName());
+
+        return new ResponseEntity<>(new TokenResponseDTO(userOptional.get().getUserId(), token), HttpStatus.OK);
+    }
+
+    public ResponseEntity<UserDetailsResponseDTO> getUserDetails(String userId) {
+        log.info("|| getUserDetails got called from UserService class with user id : {} ||", userId);
+        Optional<User> userOptional = userRepository.findById(userId);
+
+        if (userOptional.isEmpty())
+            throw new ApplicationException("user with user id : " + userId + "not found");
+
+        UserDetailsResponseDTO responseDTO = UserDetailsResponseDTO.builder()
+                .firstname(userOptional.get().getFirstname())
+                .lastname(userOptional.get().getLastname())
+                .email(userOptional.get().getEmail())
+                .roles(userOptional.get().getRoles())
+                .address(userOptional.get().getAddress())
+                .phonenumberList(userOptional.get().getPhonenumberList())
+                // TODO: fetch the created events by user id from event service
+                .eventCreated(userOptional.get().getEventCreated())
+                // TODO: fetch the joined events by user id from event service
+                .eventJoined(userOptional.get().getEventJoined())
+                .build();
+
+        return new ResponseEntity<UserDetailsResponseDTO>(responseDTO, HttpStatus.OK);
     }
 }
