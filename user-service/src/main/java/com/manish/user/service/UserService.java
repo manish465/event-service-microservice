@@ -85,6 +85,8 @@ public class UserService {
                     .roles(requestDTO.getRoles())
                     .address(address)
                     .phonenumberList(phonenumberList)
+                    .eventCreated(new ArrayList<>())
+                    .eventJoined(new ArrayList<>())
                     .build();
 
             userRepository.save(user);
