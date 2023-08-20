@@ -14,7 +14,7 @@ import java.util.*;
 @Slf4j
 public class ResponseException {
     @ExceptionHandler(ConstraintViolationException.class)
-    public ResponseEntity<Map<String, String>> handleDataValidation(ConstraintViolationException e){
+    public ResponseEntity<Map<String, String>> handleDataValidation(ConstraintViolationException e) {
         log.info("|| thrown an ConstraintViolationException with error message : {} ||", e.getMessage());
 
         Map<String, String> errors = new HashMap<>();
@@ -24,15 +24,8 @@ public class ResponseException {
         return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
     }
 
-    @ExceptionHandler(UserAlreadyExist.class)
-    public ResponseEntity<ErrorResponseDTO> handleUserAlreadyExistException(UserAlreadyExist e){
-        log.info("|| thrown an UserAlreadyExist with error message : {} ||", e.getMessage());
-
-        return new ResponseEntity<>(new ErrorResponseDTO(e.getMessage()), HttpStatus.BAD_REQUEST);
-    }
-
     @ExceptionHandler(ApplicationException.class)
-    public ResponseEntity<ErrorResponseDTO> handleApplicationException(ApplicationException e){
+    public ResponseEntity<ErrorResponseDTO> handleApplicationException(ApplicationException e) {
         log.info("|| thrown an ApplicationException with error message : {} ||", e.getMessage());
 
         return new ResponseEntity<>(new ErrorResponseDTO(e.getMessage()), HttpStatus.BAD_REQUEST);
