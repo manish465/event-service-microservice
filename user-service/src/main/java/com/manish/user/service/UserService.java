@@ -1,19 +1,26 @@
 package com.manish.user.service;
 
+import com.manish.user.dto.TokenResponseDTO;
+import com.manish.user.dto.UserLoginRequestDTO;
 import com.manish.user.dto.UserRegisterRequestDTO;
 import com.manish.user.entity.Address;
 import com.manish.user.entity.Phonenumber;
 import com.manish.user.entity.User;
 import com.manish.user.exception.ApplicationException;
 import com.manish.user.exception.UserAlreadyExist;
+import com.manish.user.proxy.AuthProxy;
 import com.manish.user.repository.AddressRepository;
 import com.manish.user.repository.PhoneRepository;
 import com.manish.user.repository.UserRepository;
+import com.manish.user.utils.Convertor;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
@@ -32,17 +39,18 @@ public class UserService {
     private final UserRepository userRepository;
     private final PhoneRepository phoneRepository;
     private final AddressRepository addressRepository;
+    private final AuthProxy authProxy;
+    private final AuthenticationManager authenticationManager;
 
-    public ResponseEntity<String> registerUser(@Valid UserRegisterRequestDTO requestDTO){
+    public ResponseEntity<String> registerUser(@Valid UserRegisterRequestDTO requestDTO) {
         log.info("|| registerUser got called from UserService class ||");
 
         Optional<User> userExist = userRepository.findByEmail(requestDTO.getEmail());
 
-        if(userExist.isPresent()){
+        if (userExist.isPresent())
             throw new UserAlreadyExist("User already exist");
-        }
 
-        try{
+        try {
             Address address = Address.builder()
                     .addressId(UUID.randomUUID().toString())
                     .address(requestDTO.getAddress().getAddress())
@@ -82,8 +90,28 @@ public class UserService {
             userRepository.save(user);
 
             return new ResponseEntity<>("User Registered Successfully", HttpStatus.CREATED);
-        }catch (Exception e){
+        } catch (Exception e) {
             throw new ApplicationException(e.getMessage());
         }
+    }
+
+    public ResponseEntity<TokenResponseDTO> loginUser(@Valid UserLoginRequestDTO requestDTO) {
+        log.info("|| loginUser got called from UserService class with credentials : {} ||", requestDTO);
+
+        Authentication authentication = authenticationManager
+                .authenticate(new UsernamePasswordAuthenticationToken(requestDTO.getEmail(), requestDTO.getPassword()));
+
+        log.info("|| done authentication using UsernamePasswordAuthenticationToken with AuthenticationManager ||");
+
+        if (!authentication.isAuthenticated())
+            throw new ApplicationException("Invalid credentials");
+
+        log.info("|| user authenticated ||");
+
+        String token = authProxy
+                .generateToken(authentication.getName(),
+                        Convertor.extractAuthoritiesToString(authentication.getAuthorities()));
+
+        return new ResponseEntity<>(new TokenResponseDTO(token), HttpStatus.OK);
     }
 }
