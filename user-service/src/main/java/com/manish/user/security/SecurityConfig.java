@@ -20,6 +20,7 @@ import com.manish.user.service.ApplicationUserDetailsService;
 @Configuration
 @EnableMethodSecurity
 public class SecurityConfig {
+    // TODO: Add a unauthozation exception handler
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
         httpSecurity
