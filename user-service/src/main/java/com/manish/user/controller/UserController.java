@@ -8,6 +8,7 @@ import com.manish.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -22,7 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class UserController {
     private final UserService userService;
 
-    @PostMapping
+    @PostMapping("/add")
     public ResponseEntity<String> registerUser(@RequestBody UserRegisterRequestDTO requestDTO) {
         log.info("|| registerUser is called in UserController class ||");
         return userService.registerUser(requestDTO);
@@ -35,8 +36,9 @@ public class UserController {
     }
 
     @GetMapping
+    @PreAuthorize("hasAuthority('NORMAL')")
     public ResponseEntity<UserDetailsResponseDTO> getUser(@RequestParam String userId) {
-        log.info("|| loginUser is called in UserController class ||");
+        log.info("|| getUser is called in UserController class ||");
         return userService.getUserDetails(userId);
     }
 }
