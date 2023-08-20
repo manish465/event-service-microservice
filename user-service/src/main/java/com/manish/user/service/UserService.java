@@ -7,7 +7,6 @@ import com.manish.user.entity.Address;
 import com.manish.user.entity.Phonenumber;
 import com.manish.user.entity.User;
 import com.manish.user.exception.ApplicationException;
-import com.manish.user.exception.UserAlreadyExist;
 import com.manish.user.proxy.AuthProxy;
 import com.manish.user.repository.AddressRepository;
 import com.manish.user.repository.PhoneRepository;
@@ -48,7 +47,7 @@ public class UserService {
         Optional<User> userExist = userRepository.findByEmail(requestDTO.getEmail());
 
         if (userExist.isPresent())
-            throw new UserAlreadyExist("User already exist");
+            throw new ApplicationException("User already exist");
 
         try {
             Address address = Address.builder()
