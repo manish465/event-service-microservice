@@ -1,11 +1,12 @@
 package com.manish.user.controller;
 
+import com.manish.user.dto.TokenResponseDTO;
+import com.manish.user.dto.UserLoginRequestDTO;
 import com.manish.user.dto.UserRegisterRequestDTO;
 import com.manish.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,9 +20,16 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping
-    public ResponseEntity<String> registerUser(@RequestBody UserRegisterRequestDTO requestDTO){
+    public ResponseEntity<String> registerUser(@RequestBody UserRegisterRequestDTO requestDTO) {
         log.info("|| registerUser is called in UserController class ||");
 
         return userService.registerUser(requestDTO);
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<TokenResponseDTO> loginUser(@RequestBody UserLoginRequestDTO requestDTO) {
+        log.info("|| loginUser is called in UserController class ||");
+
+        return userService.loginUser(requestDTO);
     }
 }
