@@ -33,10 +33,11 @@ public class AuthFilter extends OncePerRequestFilter {
 
         Authentication authentication = new UsernamePasswordAuthenticationToken(email, null,
                 authorities);
-        log.info("|| using emial : {} and role : {} ||", email, authorities);
+        log.info("|| using email : {} and role : {} ||", email, authorities);
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
         filterChain.doFilter(request, response);
     }
 
+    // TODO: implement a logic to bypass public routes
 }

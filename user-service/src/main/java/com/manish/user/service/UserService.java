@@ -1,7 +1,6 @@
 package com.manish.user.service;
 
 import com.manish.user.dto.TokenResponseDTO;
-import com.manish.user.dto.UserDetailsResponseDTO;
 import com.manish.user.dto.UserLoginRequestDTO;
 import com.manish.user.dto.UserRegisterRequestDTO;
 import com.manish.user.dto.UserUpdateRequestDTO;
@@ -29,7 +28,6 @@ import org.springframework.validation.annotation.Validated;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 @Service
 @Validated
@@ -38,8 +36,8 @@ import java.util.UUID;
 public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
-    private final PhoneRepository phoneRepository;
     private final AddressRepository addressRepository;
+    private final PhoneRepository phoneRepository;
     private final AuthProxy authProxy;
     private final AuthenticationManager authenticationManager;
 
@@ -52,8 +50,17 @@ public class UserService {
             throw new ApplicationException("User already exist");
 
         try {
+            User user = User.builder()
+                    .firstname(requestDTO.getFirstname())
+                    .lastname(requestDTO.getLastname())
+                    .email(requestDTO.getEmail())
+                    .password(passwordEncoder.encode(requestDTO.getPassword()))
+                    .roles(requestDTO.getRoles())
+                    .eventCreated(new ArrayList<>())
+                    .eventJoined(new ArrayList<>())
+                    .build();
+
             Address address = Address.builder()
-                    .addressId(UUID.randomUUID().toString())
                     .address(requestDTO.getAddress().getAddress())
                     .street(requestDTO.getAddress().getStreet())
                     .landmark(requestDTO.getAddress().getLandmark())
@@ -62,33 +69,21 @@ public class UserService {
                     .state(requestDTO.getAddress().getState())
                     .country(requestDTO.getAddress().getCountry())
                     .extraInfo(requestDTO.getAddress().getExtraInfo())
+                    .user(user)
                     .build();
 
-            addressRepository.save(address);
+            user.setAddress(address);
 
             List<Phonenumber> phonenumberList = new ArrayList<>();
 
             requestDTO.getPhonenumber().forEach(phone -> phonenumberList.add(Phonenumber.builder()
-                    .phoneId(UUID.randomUUID().toString())
                     .countryCode(phone.getCountryCode())
                     .number(phone.getNumber())
                     .type(phone.getType())
+                    .user(user)
                     .build()));
 
-            phonenumberList.forEach(phoneRepository::save);
-
-            User user = User.builder()
-                    .userId(UUID.randomUUID().toString())
-                    .firstname(requestDTO.getFirstname())
-                    .lastname(requestDTO.getLastname())
-                    .email(requestDTO.getEmail())
-                    .password(passwordEncoder.encode(requestDTO.getPassword()))
-                    .roles(requestDTO.getRoles())
-                    .address(address)
-                    .phonenumberList(phonenumberList)
-                    .eventCreated(new ArrayList<>())
-                    .eventJoined(new ArrayList<>())
-                    .build();
+            user.setPhonenumberList(phonenumberList);
 
             userRepository.save(user);
 
@@ -116,32 +111,29 @@ public class UserService {
                         Convertor.extractAuthoritiesToString(authentication.getAuthorities()));
 
         Optional<User> userOptional = userRepository.findByEmail(authentication.getName());
+        if(userOptional.isEmpty()) throw new ApplicationException("user not found");
 
         return new ResponseEntity<>(new TokenResponseDTO(userOptional.get().getUserId(), token), HttpStatus.OK);
     }
 
-    public ResponseEntity<UserDetailsResponseDTO> getUserByUserId(String userId) {
+    public ResponseEntity<User> getUserByUserId(String userId) {
         log.info("|| getUserDetails got called from UserService class with user id : {} ||", userId);
         Optional<User> userOptional = userRepository.findById(userId);
 
         if (userOptional.isEmpty())
             throw new ApplicationException("user with user id : " + userId + "not found");
 
-        UserDetailsResponseDTO responseDTO = UserDetailsResponseDTO.builder()
-                .userId(userOptional.get().getUserId())
-                .firstname(userOptional.get().getFirstname())
-                .lastname(userOptional.get().getLastname())
-                .email(userOptional.get().getEmail())
-                .roles(userOptional.get().getRoles())
-                .address(userOptional.get().getAddress())
-                .phonenumberList(userOptional.get().getPhonenumberList())
-                // TODO: fetch the created events by user id from event service
-                .eventCreated(userOptional.get().getEventCreated())
-                // TODO: fetch the joined events by user id from event service
-                .eventJoined(userOptional.get().getEventJoined())
-                .build();
+        Optional<Address> addressOptional = addressRepository.findByUser(userOptional.get());
+        List<Phonenumber> phonenumberList = phoneRepository.findAllByUser(userOptional.get());
+        if(addressOptional.isEmpty()) throw new ApplicationException("Data mapping error");
+        if(phonenumberList.isEmpty()) throw new ApplicationException("Data mapping error");
+        addressOptional.get().setUser(null);
+        phonenumberList.forEach(phone -> phone.setUser(null));
+        userOptional.get().setPassword("");
+        userOptional.get().setAddress(addressOptional.get());
+        userOptional.get().setPhonenumberList(phonenumberList);
 
-        return new ResponseEntity<UserDetailsResponseDTO>(responseDTO, HttpStatus.OK);
+        return new ResponseEntity<>(userOptional.get(), HttpStatus.OK);
     }
 
     public ResponseEntity<String> updateUserByUserId(String userId, @Valid UserUpdateRequestDTO requestDTO) {
@@ -152,36 +144,25 @@ public class UserService {
         if (userOptional.isEmpty())
             throw new ApplicationException("user with user id : " + userId + " not found");
 
-        Optional<Address> addressOptional = addressRepository.findById(requestDTO.getAddress().getAddressId());
-        if (addressOptional.isEmpty())
-            throw new ApplicationException(
-                    "address with address id : " + addressOptional.get().getAddressId() + "not found");
-        addressRepository.save(requestDTO.getAddress());
+        userOptional.get().setAddress(requestDTO.getAddress());
 
-        // requestDTO.getPhonenumberList().forEach(phone -> {
-        // Optional<Phonenumber> phonenumberOptional =
-        // phoneRepository.findById(phone.getPhoneId());
-        // if (phonenumberOptional.isEmpty())
-        // throw new ApplicationException("phone number with phone id : " +
-        // phone.getPhoneId() + "not found");
-        // phoneRepository.save(phone);
-        // });
+        for (int i = 0; i < userOptional.get().getPhonenumberList().size(); i++) {
+            userOptional.get().getPhonenumberList().get(i)
+                    .setCountryCode(requestDTO.getPhonenumberList().get(i).getCountryCode());
+            userOptional.get().getPhonenumberList().get(i)
+                    .setNumber(requestDTO.getPhonenumberList().get(i).getNumber());
+            userOptional.get().getPhonenumberList().get(i).setType(requestDTO.getPhonenumberList().get(i).getType());
+        }
 
-        User user = User.builder()
-                .userId(userOptional.get().getUserId())
-                .firstname(requestDTO.getFirstname())
-                .lastname(requestDTO.getLastname())
-                .email(requestDTO.getEmail())
-                .password(requestDTO.getPassword())
-                .roles(requestDTO.getRoles())
-                .address(requestDTO.getAddress())
-                .phonenumberList(requestDTO.getPhonenumberList())
-                .eventCreated(userOptional.get().getEventCreated())
-                .eventJoined(userOptional.get().getEventJoined())
-                .build();
-        userRepository.save(user);
+        userOptional.get().setFirstname(requestDTO.getFirstname());
+        userOptional.get().setLastname(requestDTO.getLastname());
+        userOptional.get().setEmail(requestDTO.getEmail());
+        userOptional.get().setPassword(requestDTO.getPassword());
+        userOptional.get().setRoles(requestDTO.getRoles());
 
-        return new ResponseEntity<String>("user updated", HttpStatus.OK);
+        userRepository.save(userOptional.get());
+
+        return new ResponseEntity<>("user updated", HttpStatus.OK);
     }
 
     // public ResponseEntity<String> deleteUserByUserId(String userId) {

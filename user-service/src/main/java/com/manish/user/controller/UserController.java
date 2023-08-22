@@ -1,10 +1,10 @@
 package com.manish.user.controller;
 
 import com.manish.user.dto.TokenResponseDTO;
-import com.manish.user.dto.UserDetailsResponseDTO;
 import com.manish.user.dto.UserLoginRequestDTO;
 import com.manish.user.dto.UserRegisterRequestDTO;
 import com.manish.user.dto.UserUpdateRequestDTO;
+import com.manish.user.entity.User;
 import com.manish.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -39,7 +39,7 @@ public class UserController {
 
     @GetMapping
     @PreAuthorize("hasAuthority('NORMAL')")
-    public ResponseEntity<UserDetailsResponseDTO> getUserByUserId(@RequestParam String userId) {
+    public ResponseEntity<User> getUserByUserId(@RequestParam String userId) {
         log.info("|| getUser is called in UserController class ||");
         return userService.getUserByUserId(userId);
     }

@@ -1,22 +1,25 @@
 package com.manish.user.entity;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Entity
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
+@ToString
 public class Address {
     @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
     @NotBlank
     private String addressId;
     @Size(min = 5, max = 40, message = "address field should not be less then 4 characters and more then 40 characters")
@@ -34,4 +37,7 @@ public class Address {
     @Size(min = 3, max = 20, message = "country should not be less then 3 characters and more then 20 characters")
     private String country;
     private String extraInfo;
+    @OneToOne
+    @JoinColumn(name = "userId")
+    private User user;
 }
