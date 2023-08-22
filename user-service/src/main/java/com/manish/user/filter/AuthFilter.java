@@ -28,7 +28,7 @@ public class AuthFilter extends OncePerRequestFilter {
         log.info("|| doFilterInternal is called from AuthFilter class ||");
 
         String email = "ms2@gmail.com";
-        String rolesString = "ADMIN";
+        String rolesString = "NORMAL";
         Collection<GrantedAuthority> authorities = Convertor.extractAuthoritiesFromString(rolesString);
 
         Authentication authentication = new UsernamePasswordAuthenticationToken(email, null,

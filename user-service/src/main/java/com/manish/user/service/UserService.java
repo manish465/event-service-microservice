@@ -4,6 +4,7 @@ import com.manish.user.dto.TokenResponseDTO;
 import com.manish.user.dto.UserDetailsResponseDTO;
 import com.manish.user.dto.UserLoginRequestDTO;
 import com.manish.user.dto.UserRegisterRequestDTO;
+import com.manish.user.dto.UserUpdateRequestDTO;
 import com.manish.user.entity.Address;
 import com.manish.user.entity.Phonenumber;
 import com.manish.user.entity.User;
@@ -119,7 +120,7 @@ public class UserService {
         return new ResponseEntity<>(new TokenResponseDTO(userOptional.get().getUserId(), token), HttpStatus.OK);
     }
 
-    public ResponseEntity<UserDetailsResponseDTO> getUserDetails(String userId) {
+    public ResponseEntity<UserDetailsResponseDTO> getUserByUserId(String userId) {
         log.info("|| getUserDetails got called from UserService class with user id : {} ||", userId);
         Optional<User> userOptional = userRepository.findById(userId);
 
@@ -127,6 +128,7 @@ public class UserService {
             throw new ApplicationException("user with user id : " + userId + "not found");
 
         UserDetailsResponseDTO responseDTO = UserDetailsResponseDTO.builder()
+                .userId(userOptional.get().getUserId())
                 .firstname(userOptional.get().getFirstname())
                 .lastname(userOptional.get().getLastname())
                 .email(userOptional.get().getEmail())
@@ -141,4 +143,48 @@ public class UserService {
 
         return new ResponseEntity<UserDetailsResponseDTO>(responseDTO, HttpStatus.OK);
     }
+
+    public ResponseEntity<String> updateUserByUserId(String userId, @Valid UserUpdateRequestDTO requestDTO) {
+        log.info("|| updateUserByUserId got called from UserService class with user id : {} ||", userId);
+
+        Optional<User> userOptional = userRepository.findById(userId);
+
+        if (userOptional.isEmpty())
+            throw new ApplicationException("user with user id : " + userId + " not found");
+
+        Optional<Address> addressOptional = addressRepository.findById(requestDTO.getAddress().getAddressId());
+        if (addressOptional.isEmpty())
+            throw new ApplicationException(
+                    "address with address id : " + addressOptional.get().getAddressId() + "not found");
+        addressRepository.save(requestDTO.getAddress());
+
+        // requestDTO.getPhonenumberList().forEach(phone -> {
+        // Optional<Phonenumber> phonenumberOptional =
+        // phoneRepository.findById(phone.getPhoneId());
+        // if (phonenumberOptional.isEmpty())
+        // throw new ApplicationException("phone number with phone id : " +
+        // phone.getPhoneId() + "not found");
+        // phoneRepository.save(phone);
+        // });
+
+        User user = User.builder()
+                .userId(userOptional.get().getUserId())
+                .firstname(requestDTO.getFirstname())
+                .lastname(requestDTO.getLastname())
+                .email(requestDTO.getEmail())
+                .password(requestDTO.getPassword())
+                .roles(requestDTO.getRoles())
+                .address(requestDTO.getAddress())
+                .phonenumberList(requestDTO.getPhonenumberList())
+                .eventCreated(userOptional.get().getEventCreated())
+                .eventJoined(userOptional.get().getEventJoined())
+                .build();
+        userRepository.save(user);
+
+        return new ResponseEntity<String>("user updated", HttpStatus.OK);
+    }
+
+    // public ResponseEntity<String> deleteUserByUserId(String userId) {
+
+    // }
 }
