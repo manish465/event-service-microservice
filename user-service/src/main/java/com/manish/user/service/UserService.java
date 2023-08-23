@@ -140,11 +140,9 @@ public class UserService {
         log.info("|| updateUserByUserId got called from UserService class with user id : {} ||", userId);
 
         Optional<User> userOptional = userRepository.findById(userId);
-        log.info("|| called 1 ||");
 
         if (userOptional.isEmpty())
             throw new ApplicationException("user with user id : " + userId + " not found");
-        log.info("|| called 2 ||");
 
         User user = User.builder()
                 .userId(userId)
@@ -156,7 +154,6 @@ public class UserService {
                 .eventCreated(userOptional.get().getEventCreated())
                 .eventJoined(userOptional.get().getEventJoined())
                 .build();
-        log.info("|| called 3 ||");
 
         Address address = Address.builder()
                         .addressId(requestDTO.getAddress().getAddressId())
@@ -170,10 +167,8 @@ public class UserService {
                         .extraInfo(requestDTO.getAddress().getExtraInfo())
                         .user(user)
                         .build();
-        log.info("|| called 4 ||");
 
         user.setAddress(address);
-        log.info("|| called 5 ||");
 
         List<Phonenumber> phonenumberList = new ArrayList<>();
         requestDTO.getPhonenumberList().forEach(phone -> phonenumberList.add(Phonenumber.builder()
@@ -183,13 +178,10 @@ public class UserService {
                         .type(phone.getType())
                         .user(user)
                         .build()));
-        log.info("|| called 6 ||");
 
         user.setPhonenumberList(phonenumberList);
-        log.info("|| called 7 ||");
 
         userRepository.save(user);
-        log.info("|| called 8 ||");
 
         return new ResponseEntity<>("user updated", HttpStatus.OK);
     }
