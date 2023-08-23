@@ -186,7 +186,16 @@ public class UserService {
         return new ResponseEntity<>("user updated", HttpStatus.OK);
     }
 
-    // public ResponseEntity<String> deleteUserByUserId(String userId) {
+     public ResponseEntity<String> deleteUserByUserId(String userId) {
+         log.info("|| deleteUserByUserId got called from UserService class with user id : {} ||", userId);
 
-    // }
+         Optional<User> userOptional = userRepository.findById(userId);
+
+         if (userOptional.isEmpty())
+             throw new ApplicationException("user with user id : " + userId + " not found");
+
+         userRepository.deleteById(userId);
+
+         return new ResponseEntity<>("User deleted", HttpStatus.OK);
+     }
 }
