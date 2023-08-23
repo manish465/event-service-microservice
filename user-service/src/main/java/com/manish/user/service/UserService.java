@@ -34,6 +34,8 @@ import java.util.Optional;
 @Slf4j
 @RequiredArgsConstructor
 public class UserService {
+    // TODO: fetch the created events by user id from event service
+    // TODO: fetch the joined events by user id from event service
     private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
     private final AddressRepository addressRepository;
