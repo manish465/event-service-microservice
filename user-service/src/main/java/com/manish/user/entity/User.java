@@ -15,6 +15,7 @@ import java.util.List;
 @Builder
 public class User {
     @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
     private String userId;
     private String firstname;
     private String lastname;
@@ -22,9 +23,9 @@ public class User {
     private String email;
     private String password;
     private String roles;
-    @OneToOne
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private Address address;
-    @OneToMany
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Phonenumber> phonenumberList;
     private List<String> eventCreated;
     private List<String> eventJoined;

@@ -1,13 +1,13 @@
 package com.manish.user.filter;
 
 import java.io.IOException;
-import java.util.Collection;
+import java.util.*;
 
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Component;
+import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.manish.user.utils.Convertor;
@@ -18,9 +18,11 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 
-@Component
 @Slf4j
 public class AuthFilter extends OncePerRequestFilter {
+
+    private final List<String> skipUrls = List.of("/user/auth/add","/user/auth/login");
+    private final AntPathMatcher pathMatcher = new AntPathMatcher();
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
@@ -28,15 +30,19 @@ public class AuthFilter extends OncePerRequestFilter {
         log.info("|| doFilterInternal is called from AuthFilter class ||");
 
         String email = "ms2@gmail.com";
-        String rolesString = "ADMIN";
+        String rolesString = "NORMAL";
         Collection<GrantedAuthority> authorities = Convertor.extractAuthoritiesFromString(rolesString);
 
         Authentication authentication = new UsernamePasswordAuthenticationToken(email, null,
                 authorities);
-        log.info("|| using emial : {} and role : {} ||", email, authorities);
+        log.info("|| using email : {} and role : {} ||", email, authorities);
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
         filterChain.doFilter(request, response);
     }
 
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request){
+        return skipUrls.stream().anyMatch(path -> pathMatcher.match(path, request.getRequestURI()));
+    }
 }
