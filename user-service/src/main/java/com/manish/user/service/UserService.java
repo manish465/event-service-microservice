@@ -140,15 +140,23 @@ public class UserService {
         log.info("|| updateUserByUserId got called from UserService class with user id : {} ||", userId);
 
         Optional<User> userOptional = userRepository.findById(userId);
+        log.info("|| called 1 ||");
 
         if (userOptional.isEmpty())
             throw new ApplicationException("user with user id : " + userId + " not found");
+        log.info("|| called 2 ||");
 
-        userOptional.get().setFirstname(requestDTO.getFirstname());
-        userOptional.get().setLastname(requestDTO.getLastname());
-        userOptional.get().setEmail(requestDTO.getEmail());
-        userOptional.get().setPassword(requestDTO.getPassword());
-        userOptional.get().setRoles(requestDTO.getRoles());
+        User user = User.builder()
+                .userId(userId)
+                .firstname(requestDTO.getFirstname())
+                .lastname(requestDTO.getLastname())
+                .email(requestDTO.getEmail())
+                .password(userOptional.get().getPassword())
+                .roles(requestDTO.getRoles())
+                .eventCreated(userOptional.get().getEventCreated())
+                .eventJoined(userOptional.get().getEventJoined())
+                .build();
+        log.info("|| called 3 ||");
 
         Address address = Address.builder()
                         .addressId(requestDTO.getAddress().getAddressId())
@@ -160,9 +168,12 @@ public class UserService {
                         .state(requestDTO.getAddress().getState())
                         .country(requestDTO.getAddress().getCountry())
                         .extraInfo(requestDTO.getAddress().getExtraInfo())
-                        .user(userOptional.get())
+                        .user(user)
                         .build();
-        userOptional.get().setAddress(address);
+        log.info("|| called 4 ||");
+
+        user.setAddress(address);
+        log.info("|| called 5 ||");
 
         List<Phonenumber> phonenumberList = new ArrayList<>();
         requestDTO.getPhonenumberList().forEach(phone -> phonenumberList.add(Phonenumber.builder()
@@ -170,11 +181,15 @@ public class UserService {
                         .countryCode(phone.getCountryCode())
                         .number(phone.getNumber())
                         .type(phone.getType())
-                        .user(userOptional.get())
+                        .user(user)
                         .build()));
-        userOptional.get().setPhonenumberList(phonenumberList);
-        
-        userRepository.save(userOptional.get());
+        log.info("|| called 6 ||");
+
+        user.setPhonenumberList(phonenumberList);
+        log.info("|| called 7 ||");
+
+        userRepository.save(user);
+        log.info("|| called 8 ||");
 
         return new ResponseEntity<>("user updated", HttpStatus.OK);
     }

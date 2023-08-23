@@ -24,8 +24,6 @@ public class UserUpdateRequestDTO {
     private String lastname;
     @Email(message = "enter a valid email")
     private String email;
-    @Pattern(regexp = "^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{8,}$", message = "password field should have minimum 8 characters, at least one letter and one number")
-    private String password;
     @NotBlank(message = "role is required")
     private String roles;
     @Valid

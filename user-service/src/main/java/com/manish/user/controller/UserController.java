@@ -8,6 +8,7 @@ import com.manish.user.entity.User;
 import com.manish.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -47,7 +48,7 @@ public class UserController {
     @PutMapping
     @PreAuthorize("hasAuthority('NORMAL')")
     public ResponseEntity<String> updateUserByUserId(@RequestParam String userId,
-            @RequestBody UserUpdateRequestDTO requestDTO) {
+                                                     @RequestBody UserUpdateRequestDTO requestDTO) {
         log.info("|| updateUserByUserId is called in UserController class ||");
         return userService.updateUserByUserId(userId, requestDTO);
     }
