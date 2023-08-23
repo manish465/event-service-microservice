@@ -144,22 +144,36 @@ public class UserService {
         if (userOptional.isEmpty())
             throw new ApplicationException("user with user id : " + userId + " not found");
 
-        userOptional.get().setAddress(requestDTO.getAddress());
-
-        for (int i = 0; i < userOptional.get().getPhonenumberList().size(); i++) {
-            userOptional.get().getPhonenumberList().get(i)
-                    .setCountryCode(requestDTO.getPhonenumberList().get(i).getCountryCode());
-            userOptional.get().getPhonenumberList().get(i)
-                    .setNumber(requestDTO.getPhonenumberList().get(i).getNumber());
-            userOptional.get().getPhonenumberList().get(i).setType(requestDTO.getPhonenumberList().get(i).getType());
-        }
-
         userOptional.get().setFirstname(requestDTO.getFirstname());
         userOptional.get().setLastname(requestDTO.getLastname());
         userOptional.get().setEmail(requestDTO.getEmail());
         userOptional.get().setPassword(requestDTO.getPassword());
         userOptional.get().setRoles(requestDTO.getRoles());
 
+        Address address = Address.builder()
+                        .addressId(requestDTO.getAddress().getAddressId())
+                        .address(requestDTO.getAddress().getAddress())
+                        .street(requestDTO.getAddress().getStreet())
+                        .landmark(requestDTO.getAddress().getLandmark())
+                        .city(requestDTO.getAddress().getCity())
+                        .zipcode(requestDTO.getAddress().getZipcode())
+                        .state(requestDTO.getAddress().getState())
+                        .country(requestDTO.getAddress().getCountry())
+                        .extraInfo(requestDTO.getAddress().getExtraInfo())
+                        .user(userOptional.get())
+                        .build();
+        userOptional.get().setAddress(address);
+
+        List<Phonenumber> phonenumberList = new ArrayList<>();
+        requestDTO.getPhonenumberList().forEach(phone -> phonenumberList.add(Phonenumber.builder()
+                        .phoneId(phone.getPhoneId())
+                        .countryCode(phone.getCountryCode())
+                        .number(phone.getNumber())
+                        .type(phone.getType())
+                        .user(userOptional.get())
+                        .build()));
+        userOptional.get().setPhonenumberList(phonenumberList);
+        
         userRepository.save(userOptional.get());
 
         return new ResponseEntity<>("user updated", HttpStatus.OK);

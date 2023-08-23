@@ -1,13 +1,13 @@
 package com.manish.user.filter;
 
 import java.io.IOException;
-import java.util.Collection;
+import java.util.*;
 
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Component;
+import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.manish.user.utils.Convertor;
@@ -18,9 +18,11 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 
-@Component
 @Slf4j
 public class AuthFilter extends OncePerRequestFilter {
+
+    private final List<String> skipUrls = List.of("/user/auth/add","/user/auth/login");
+    private final AntPathMatcher pathMatcher = new AntPathMatcher();
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
@@ -39,5 +41,8 @@ public class AuthFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
-    // TODO: implement a logic to bypass public routes
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request){
+        return skipUrls.stream().anyMatch(path -> pathMatcher.match(path, request.getRequestURI()));
+    }
 }

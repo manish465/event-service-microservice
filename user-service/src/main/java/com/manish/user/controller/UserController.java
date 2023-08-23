@@ -25,13 +25,13 @@ import org.springframework.web.bind.annotation.RestController;
 public class UserController {
     private final UserService userService;
 
-    @PostMapping("/add")
+    @PostMapping("/auth/add")
     public ResponseEntity<String> registerUser(@RequestBody UserRegisterRequestDTO requestDTO) {
         log.info("|| registerUser is called in UserController class ||");
         return userService.registerUser(requestDTO);
     }
 
-    @PostMapping("/login")
+    @PostMapping("/auth/login")
     public ResponseEntity<TokenResponseDTO> loginUser(@RequestBody UserLoginRequestDTO requestDTO) {
         log.info("|| loginUser is called in UserController class ||");
         return userService.loginUser(requestDTO);
